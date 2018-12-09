@@ -83,6 +83,8 @@ void goto_symext::symex_assign(statet &state, const code_assignt &code)
       rhs,
       lhs_if_then_else_conditions,
       assignment_type);
+
+    symex_field_static_init(ns, state, code);
   }
 }
 
