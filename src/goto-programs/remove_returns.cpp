@@ -228,7 +228,10 @@ void remove_returnst::operator()(goto_functionst &goto_functions)
       INVARIANT(
         findit != goto_functions.function_map.end(),
         "called function should have some entry in the function map");
-      return !findit->second.body_available();
+      return !findit->second.body_available() &&
+             function_id != CPROVER_PREFIX "field_decl" &&
+             function_id != CPROVER_PREFIX "get_field" &&
+             function_id != CPROVER_PREFIX "set_field";
     };
 
     replace_returns(it->first, it->second);
