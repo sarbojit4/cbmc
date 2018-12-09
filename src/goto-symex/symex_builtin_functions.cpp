@@ -204,6 +204,9 @@ void goto_symext::symex_allocate(
   symex_assign(
     state,
     code_assignt(lhs, typecast_exprt::conditional_cast(rhs, lhs.type())));
+
+  // TODO
+  shadow_memory.symex_field_dynamic_init();
 }
 
 irep_idt get_symbol(const exprt &src)
