@@ -143,6 +143,7 @@ SRC = $(BOOLEFORCE_SRC) \
       lowering/popcount.cpp \
       bdd/miniBDD/miniBDD.cpp \
       prop/bdd_expr.cpp \
+      prop/context_solver.cpp \
       prop/cover_goals.cpp \
       prop/literal.cpp \
       prop/minimize.cpp \
