@@ -418,7 +418,7 @@ void goto_symext::symex_step(
     break;
 
   case ASSERT:
-    if(!state.guard.is_false())
+    if(!state.guard.is_false() && !ignore_assertions)
     {
       std::string msg=id2string(state.source.pc->source_location.get_comment());
       if(msg=="")

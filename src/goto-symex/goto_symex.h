@@ -146,6 +146,10 @@ public:
   /// successor state to continue executing, and resume symex from that state.
   bool should_pause_symex;
 
+  /// If this flag is set to true then assertions will be temporarily ignored
+  /// by the symbolic executions.
+  bool ignore_assertions = false;
+
 protected:
   const symex_configt symex_config;
 
