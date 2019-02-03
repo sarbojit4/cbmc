@@ -327,6 +327,27 @@ void symex_target_equationt::constraint(
   merge_ireps(SSA_step);
 }
 
+void symex_target_equationt::convert_without_assertions(prop_convt &prop_conv)
+{
+  try
+  {
+    convert_guards(prop_conv);
+    convert_assignments(prop_conv);
+    convert_decls(prop_conv);
+    convert_assumptions(prop_conv);
+    convert_goto_instructions(prop_conv);
+    convert_function_calls(prop_conv);
+    convert_io(prop_conv);
+    convert_constraints(prop_conv);
+  }
+  catch(const equation_conversion_exceptiont &conversion_exception)
+  {
+    // unwrap the except and throw like normal
+    const std::string full_error = unwrap_exception(conversion_exception);
+    throw full_error;
+  }
+}
+
 void symex_target_equationt::convert(
   prop_convt &prop_conv)
 {
