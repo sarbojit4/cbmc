@@ -4853,3 +4853,8 @@ exprt smt2_convt::substitute_let(
 
   return expr;
 }
+
+std::size_t smt2_convt::get_number_of_solver_calls() const
+{
+  return number_of_solver_calls;
+}
