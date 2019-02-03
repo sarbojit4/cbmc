@@ -8,6 +8,7 @@ DIRS = cbmc \
        goto-instrument \
        cpp \
        cbmc-cover \
+       cbmc-incr-oneloop \
        goto-instrument-typedef \
        smt2_solver \
        smt2_strings \
