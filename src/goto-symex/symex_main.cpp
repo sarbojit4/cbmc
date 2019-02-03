@@ -470,7 +470,7 @@ void goto_symext::symex_step(
     break;
 
   case ASSERT:
-    if(!state.guard.is_false())
+    if(!state.guard.is_false() && !ignore_assertions)
       symex_assert(instruction, state);
     symex_transition(state);
     break;
