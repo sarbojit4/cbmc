@@ -49,7 +49,7 @@ public:
   decision_proceduret::resultt solve();
 
   /// Returns the solver instance
-  prop_convt &get_solver() const;
+  virtual prop_convt &get_solver() const;
 
   /// Return the equation associated with this instance
   symex_target_equationt &get_equation() const;
@@ -66,6 +66,8 @@ public:
     std::unordered_set<irep_idt> &updated_properties,
     decision_proceduret::resultt dec_result,
     bool set_pass = true) const;
+
+  virtual ~goto_symex_property_decidert() = default;
 
 protected:
   const optionst &options;
