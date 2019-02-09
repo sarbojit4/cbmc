@@ -184,7 +184,11 @@ public:
 
   /// Converts assertions: build a disjunction of negated assertions.
   /// \param prop_conv: A handle to a particular decision procedure interface
-  void convert_assertions(prop_convt &prop_conv);
+  /// \param optimized_for_single_assertions: Use an optimized encoding for
+  ///   single assertions (unsound for incremental conversions)
+  void convert_assertions(
+    prop_convt &prop_conv,
+    bool optimized_for_single_assertions = true);
 
   /// Converts constraints: set the represented condition to _True_.
   /// \param decision_procedure: A handle to a particular decision procedure

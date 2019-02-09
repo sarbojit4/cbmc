@@ -517,7 +517,7 @@ void symex_target_equationt::convert_constraints(
 }
 
 void symex_target_equationt::convert_assertions(
-  prop_convt &prop_conv)
+  prop_convt &prop_conv, bool optimized_for_single_assertions)
 {
   // we find out if there is only _one_ assertion,
   // which allows for a simpler formula
@@ -527,7 +527,7 @@ void symex_target_equationt::convert_assertions(
   if(number_of_assertions==0)
     return;
 
-  if(number_of_assertions==1)
+  if(number_of_assertions==1 && optimized_for_single_assertions)
   {
     for(auto &step : SSA_steps)
     {
