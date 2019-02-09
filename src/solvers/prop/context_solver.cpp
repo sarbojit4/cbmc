@@ -48,16 +48,14 @@ void context_solvert::print_assignment(std::ostream &out) const
   prop_conv.print_assignment(out);
 }
 
-void context_solvert::set_frozen(literalt)
+void context_solvert::set_frozen(literalt l)
 {
-  // unsupported
-  UNREACHABLE;
+  prop_conv.set_frozen(l);
 }
 
-void context_solvert::set_frozen(const bvt &)
+void context_solvert::set_frozen(const bvt &bv)
 {
-  // unsupported
-  UNREACHABLE;
+  prop_conv.set_frozen(bv);
 }
 
 void context_solvert::set_assumptions(const bvt &_assumptions)
@@ -74,8 +72,7 @@ bool context_solvert::has_set_assumptions() const
 
 void context_solvert::set_all_frozen()
 {
-  // unsupported
-  UNREACHABLE;
+  prop_conv.set_all_frozen();
 }
 
 bool context_solvert::is_in_conflict(literalt l) const
