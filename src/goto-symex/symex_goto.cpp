@@ -93,6 +93,7 @@ void goto_symext::symex_goto(statet &state)
 
     if(should_stop_unwind(state.source, state.call_stack(), unwind))
     {
+      // we break the loop
       loop_bound_exceeded(state, new_guard);
 
       // next instruction
@@ -102,6 +103,11 @@ void goto_symext::symex_goto(statet &state)
 
     if(new_guard.is_true())
     {
+      // we continue executing the loop
+      if(check_break(loop_id, false, state, new_guard, unwind))
+      {
+        should_pause_symex = true;
+      }
       symex_transition(state, goto_target, true);
       return; // nothing else to do
     }
@@ -295,6 +301,17 @@ void goto_symext::symex_goto(statet &state)
       }
     }
   }
+}
+
+bool goto_symext::check_break(
+  const irep_idt &id,
+  bool is_function,
+  statet &state,
+  const exprt &cond,
+  unsigned unwind)
+{
+  //dummy implementation
+  return false;
 }
 
 void goto_symext::merge_gotos(statet &state)

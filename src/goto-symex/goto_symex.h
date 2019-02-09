@@ -150,6 +150,13 @@ public:
   /// by the symbolic executions.
   bool ignore_assertions = false;
 
+  virtual bool check_break(
+    const irep_idt &id,
+    bool is_function,
+    statet &state,
+    const exprt &cond,
+    unsigned unwind);
+
 protected:
   const symex_configt symex_config;
 
