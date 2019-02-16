@@ -778,7 +778,7 @@ std::vector<irep_idt> goto_tracet::get_all_property_ids() const
   std::vector<irep_idt> property_ids;
   for(const auto &step : steps)
   {
-    if(step.is_assert())
+    if(step.is_assert() && !step.cond_value)
       property_ids.push_back(step.property_id);
   }
   return property_ids;
