@@ -265,10 +265,8 @@ std::string expr2javat::convert_rec(
     return q+"float"+d;
   else if(src==java_double_type())
     return q+"double"+d;
-  else if(src==java_boolean_type())
+  else if(src == java_boolean_type() || src == bool_typet())
     return q+"boolean"+d;
-  else if(src==java_byte_type())
-    return q+"byte"+d;
   else if(src.id()==ID_code)
   {
     const java_method_typet &method_type = to_java_method_type(src);

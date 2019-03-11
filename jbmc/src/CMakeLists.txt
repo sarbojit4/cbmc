@@ -1,3 +1,6 @@
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED true)
+
 project(JBMC)
 
 #   Set the public include locations for a target.
@@ -19,3 +22,6 @@ add_subdirectory(java_bytecode)
 add_subdirectory(jbmc)
 add_subdirectory(janalyzer)
 add_subdirectory(jdiff)
+
+add_executable(smt2tojava smt2tojava/smt2tojava.cpp)
+target_link_libraries(smt2tojava java_bytecode solvers util)
