@@ -15,10 +15,7 @@ Author: Peter Schrammel
 class prop_assumptiont
 {
 public:
-  virtual void set_frozen(literalt) = 0;
-  virtual void set_frozen(const bvt &) = 0;
   virtual void set_assumptions(const bvt &) = 0;
-  virtual void set_all_frozen() = 0;
   virtual bool is_in_conflict(literalt) const = 0;
 
   virtual ~prop_assumptiont() = default;
