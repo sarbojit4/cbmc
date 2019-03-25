@@ -21,6 +21,8 @@ Author: Daniel Kroening, kroening@kroening.com
 #include "literal.h"
 #include "literal_expr.h"
 #include "prop.h"
+#include "prop_assumption.h"
+#include "prop_resource_limits.h"
 
 // API that provides a "handle" in the form of a literalt
 // for expressions.
@@ -43,20 +45,6 @@ public:
   // specialised variant of get
   virtual tvt l_get(literalt a) const=0;
 
-  // incremental solving
-  virtual void set_frozen(literalt a);
-  virtual void set_frozen(const bvt &);
-  virtual void set_assumptions(const bvt &_assumptions);
-  virtual bool has_set_assumptions() const { return false; }
-  virtual void set_all_frozen() {}
-
-  // returns true if an assumption is in the final conflict
-  virtual bool is_in_conflict(literalt l) const;
-  virtual bool has_is_in_conflict() const { return false; }
-
-  // Resource limits:
-  virtual void set_time_limit_seconds(uint32_t) {}
-
   /// Returns the number of incremental solver calls
   virtual std::size_t get_number_of_solver_calls() const = 0;
 };
@@ -68,7 +56,10 @@ public:
 
 /*! \brief TO_BE_DOCUMENTED
 */
-class prop_conv_solvert : public prop_convt, public messaget
+class prop_conv_solvert : public prop_convt,
+                          public messaget,
+                          public prop_assumptiont,
+                          public prop_resource_limitst
 {
 public:
   explicit prop_conv_solvert(propt &_prop) : prop(_prop)
@@ -85,29 +76,45 @@ public:
   { return "propositional reduction"; }
   exprt get(const exprt &expr) const override;
 
-  // overloading from prop_convt
-  using prop_convt::set_frozen;
-  virtual tvt l_get(literalt a) const override { return prop.l_get(a); }
+  // implementing prop_assumptiont
+  void set_frozen(const bvt &) override;
   void set_frozen(literalt a) override
   {
     prop.set_frozen(a);
   }
+
   void set_assumptions(const bvt &_assumptions) override
-  { prop.set_assumptions(_assumptions); }
-  bool has_set_assumptions() const override
-  { return prop.has_set_assumptions(); }
+  {
+    prop.set_assumptions(_assumptions);
+  }
+
   void set_all_frozen() override
   {
     freeze_all = true;
   }
-  literalt convert(const exprt &expr) override;
+
   bool is_in_conflict(literalt l) const override
-  { return prop.is_in_conflict(l); }
-  bool has_is_in_conflict() const override
-  { return prop.has_is_in_conflict(); }
+  {
+    return prop.is_in_conflict(l);
+  }
+
+  // implementing prop_resource_limitst
+  void set_time_limit_seconds(uint32_t lim) override
+  {
+    prop.set_time_limit_seconds(lim);
+  }
+
+  // implementing prop_convt
+  literalt convert(const exprt &expr) override;
+  std::size_t get_number_of_solver_calls() const override;
 
   // get literal for expression, if available
   bool literal(const symbol_exprt &expr, literalt &literal) const;
+
+  virtual tvt l_get(literalt a) const override
+  {
+    return prop.l_get(a);
+  }
 
   bool use_cache = true;
   bool equality_propagation = true;
@@ -120,13 +127,6 @@ public:
 
   const cachet &get_cache() const { return cache; }
   const symbolst &get_symbols() const { return symbols; }
-
-  void set_time_limit_seconds(uint32_t lim) override
-  {
-    prop.set_time_limit_seconds(lim);
-  }
-
-  std::size_t get_number_of_solver_calls() const override;
 
 protected:
   virtual void post_process();
