@@ -20,7 +20,9 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <util/irep_hash_container.h>
 #endif
 
+#include <solvers/prop/prop_assumption.h>
 #include <solvers/prop/prop_conv.h>
+#include <solvers/prop/prop_incremental.h>
 #include <solvers/flattening/boolbv_width.h>
 #include <solvers/flattening/pointer_logic.h>
 
@@ -31,7 +33,9 @@ class constant_exprt;
 class index_exprt;
 class member_exprt;
 
-class smt2_convt:public prop_convt
+class smt2_convt:public prop_convt,
+                 public prop_incrementalt,
+                 public prop_assumptiont
 {
 public:
   enum class solvert
@@ -115,7 +119,8 @@ public:
 
   literalt convert(const exprt &expr) override;
   void set_frozen(literalt) override
-  { /* not needed */
+  {
+    // not needed
   }
   void set_to(const exprt &expr, bool value) override;
   exprt get(const exprt &expr) const override;
