@@ -12,6 +12,8 @@ Author: Peter Schrammel
 #ifndef CPROVER_SOLVERS_PROP_PROP_ASSUMPTION_H
 #define CPROVER_SOLVERS_PROP_PROP_ASSUMPTION_H
 
+#include "literal.h"
+
 class prop_assumptiont
 {
 public:
