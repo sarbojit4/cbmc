@@ -22,6 +22,7 @@ Author: Daniel Kroening, kroening@kroening.com
 #include "literal_expr.h"
 #include "prop.h"
 #include "prop_assumption.h"
+#include "prop_incremental.h"
 #include "prop_resource_limits.h"
 
 // API that provides a "handle" in the form of a literalt
@@ -58,6 +59,7 @@ public:
 */
 class prop_conv_solvert : public prop_convt,
                           public messaget,
+                          public prop_incrementalt,
                           public prop_assumptiont,
                           public prop_resource_limitst
 {
