@@ -62,12 +62,17 @@ void cover_goalst::constraint()
 /// Build clause
 void cover_goalst::freeze_goal_variables()
 {
+  // we need an incremental solver
+  prop_incrementalt *prop_incremental =
+    dynamic_cast<prop_incrementalt *>(&prop_conv);
+  PRECONDITION(prop_incremental != nullptr);
+
   for(std::list<goalt>::const_iterator
       g_it=goals.begin();
       g_it!=goals.end();
       g_it++)
     if(!g_it->condition.is_constant())
-      prop_conv.set_frozen(g_it->condition);
+      prop_incremental->set_frozen(g_it->condition);
 }
 
 /// Try to cover all goals
