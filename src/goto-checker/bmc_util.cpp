@@ -26,6 +26,7 @@ Author: Daniel Kroening, Peter Schrammel
 #include <linking/static_lifetime_init.h>
 
 #include <solvers/prop/prop_conv.h>
+#include <solvers/prop/prop_incremental.h>
 
 #include <util/make_unique.h>
 #include <util/ui_message.h>
@@ -105,7 +106,7 @@ void output_error_trace(
 
 void freeze_guards(
   const symex_target_equationt &equation,
-  prop_convt &prop_conv)
+  prop_conv_incrementalt &prop_conv)
 {
   for(const auto &step : equation.SSA_steps)
   {
