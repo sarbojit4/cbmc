@@ -80,6 +80,18 @@ solver_factoryt::solvert::decision_procedure_incremental() const
   return *solver;
 }
 
+decision_procedure_assumptionst &
+solver_factoryt::solvert::decision_procedure_assumptions() const
+{
+  PRECONDITION(decision_procedure_ptr != nullptr);
+  decision_procedure_assumptionst *solver =
+    dynamic_cast<decision_procedure_assumptionst *>(&*decision_procedure_ptr);
+  INVARIANT(
+    solver != nullptr,
+    "incremental decision procedure with solving under assumptions required");
+  return *solver;
+}
+
 propt &solver_factoryt::solvert::prop() const
 {
   PRECONDITION(prop_ptr != nullptr);
@@ -95,12 +107,13 @@ void solver_factoryt::set_decision_procedure_time_limit(
   if(timeout_seconds > 0)
   {
     solver_resource_limitst *solver =
-      dynamic_cast<solver_resource_limitst *>(&prop_conv);
+      dynamic_cast<solver_resource_limitst *>(&decision_procedure);
     if(solver == nullptr)
     {
       messaget log(message_handler);
       log.warning() << "cannot set solver time limit on "
-                    << prop_conv.decision_procedure_text() << messaget::eom;
+                    << decision_procedure.decision_procedure_text()
+                    << messaget::eom;
       return;
     }
 

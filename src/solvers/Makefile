@@ -145,6 +145,7 @@ SRC = $(BOOLEFORCE_SRC) \
       prop/bdd_expr.cpp \
       prop/cover_goals.cpp \
       prop/decision_procedure.cpp \
+      prop/decision_procedure_assumptions.cpp \
       prop/decision_procedure_incremental.cpp \
       prop/literal.cpp \
       prop/prop_minimize.cpp \
