@@ -29,6 +29,7 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <util/expr_initializer.h>
 #include <util/ieee_float.h>
 #include <util/invariant.h>
+#include <util/mathematical_expr.h>
 #include <util/namespace.h>
 #include <util/prefix.h>
 #include <util/simplify_expr.h>
@@ -1250,6 +1251,16 @@ code_blockt java_bytecode_convert_methodt::convert_instructions(
         "function expected to have exactly one parameter");
       c = replace_call_to_cprover_assume(i_it->source_location, c);
     }
+    else if(statement=="invokestatic" &&
+            id2string(arg0.get(ID_identifier))==
+            "java::org.cprover.CProver.forall:(IZ)Z")
+    {
+      const java_method_typet &method_type = to_java_method_type(arg0.type());
+      INVARIANT(
+        method_type.parameters().size() == 2,
+        "function expected to have exactly two parameters");
+      c = replace_call_to_cprover_forall(i_it->source_location, c, results);
+    }
     // replace calls to CProver.atomicBegin
     else if(statement == "invokestatic" &&
             arg0.get(ID_identifier) ==
@@ -2271,6 +2282,28 @@ codet &java_bytecode_convert_methodt::replace_call_to_cprover_assume(
   operand = typecast_exprt::conditional_cast(operand, bool_typet());
 
   c = code_assumet(operand);
+  location.set_function(method_id);
+  c.add_source_location() = location;
+  return c;
+}
+
+codet &java_bytecode_convert_methodt::replace_call_to_cprover_forall(
+  source_locationt location,
+  codet &c,
+  exprt::operandst &results)
+{
+  exprt var = pop(1)[0];
+  exprt cond = pop(1)[0];
+
+  // we may need to adjust the type of the argument
+  cond = typecast_exprt::conditional_cast(var, bool_typet());
+
+  exprt lhs = tmp_variable("return", bool_typet());
+  exprt promoted = java_bytecode_promotion(lhs);
+  results.resize(1);
+  results[0] = promoted;
+
+  c = code_assignt(lhs, forall_exprt(to_symbol_expr(var), cond));
   location.set_function(method_id);
   c.add_source_location() = location;
   return c;
