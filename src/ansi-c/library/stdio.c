@@ -263,7 +263,7 @@ char *fgets(char *str, int size, FILE *stream)
     // check that the memory is accessible
     (void)*(char *)str;
     (void)*(((const char *)str) + str_length - 1);
-    char contents_nondet[str_length];
+    char *contents_nondet = malloc(size);
     __CPROVER_array_replace(str, contents_nondet);
     if(!error)
       str[str_length]='\0';
