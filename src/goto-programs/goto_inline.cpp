@@ -14,6 +14,7 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <util/std_code.h>
 #include <util/std_expr.h>
 #include <util/expr_util.h>
+#include <iostream>
 
 #include "remove_skip.h"
 #include "goto_inline.h"
@@ -50,6 +51,7 @@ void goto_inlinet::parameter_assignments(
       it2!=parameter_types.end();
       it2++)
   {
+    std::cout<<it1->pretty()<<eom;
     const code_typet::parametert &parameter=*it2;
 
     // this is the type the n-th argument should be
@@ -440,8 +442,9 @@ void goto_inlinet::expand_function_call(
     // Uh. Buh. Give up.
     warning().source_location=function.find_source_location();
     warning() << "recursion is ignored" << eom;
+    rec_func_set.insert(identifier);
     is_recursion_detected=true;
-    target->make_skip();
+    //target->make_skip();
     
     target++;
     return;
@@ -772,7 +775,8 @@ void goto_inlinet::operator()()
       it=goto_functions.function_map.begin();
       it!=goto_functions.function_map.end();
       it++)
-    if(it->first!=goto_functionst::entry_point())
+    if(it->first!=goto_functionst::entry_point() && 
+       rec_func_set.find(it->first)==rec_func_set.end())
       it->second.body.clear();
 }
 

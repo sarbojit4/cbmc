@@ -83,6 +83,7 @@ protected:
 
   typedef hash_set_cont<irep_idt, irep_id_hash> recursion_sett;
   recursion_sett recursion_set;
+  recursion_sett rec_func_set;
   
   typedef hash_set_cont<irep_idt, irep_id_hash> no_body_sett;
   no_body_sett no_body_set;
