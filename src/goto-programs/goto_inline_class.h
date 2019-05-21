@@ -22,11 +22,13 @@ public:
     goto_functionst &_goto_functions,
     const namespacet &_ns,
     message_handlert &_message_handler,
-    unsigned _depth=0):
+    symbol_tablet &_symbol_table,
+    unsigned _depth=1):
     messaget(_message_handler),
     smallfunc_limit(0),
     goto_functions(_goto_functions),
     ns(_ns),
+    symbol_table(_symbol_table),
     depth(_depth),
     is_recursion_detected(false)
   {
@@ -56,6 +58,7 @@ public:
 protected:
   goto_functionst &goto_functions;
   const namespacet &ns;
+  symbol_tablet &symbol_table;
   unsigned depth;
   bool is_recursion_detected;
   

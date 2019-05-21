@@ -414,9 +414,16 @@ void goto_inlinet::create_renaming_symbol_map(
     irep_idt old_id=to_symbol_expr(code).get_identifier();
     irep_idt new_id=dstring(id2string(old_id)+"::"+std::to_string(depth));
     rename_symbol.insert_expr(old_id, new_id);
-    symbolt new_symb;
-    new_symb.from_irep(new_id);
-    ns.get_symbol_table()
+    const symbolt* symb;
+    if(ns.lookup(new_id, symb))
+    {
+      symbolt new_symb;
+      new_symb.from_irep(code);
+      new_symb.name=new_id;
+      new_symb.pretty_name=new_id;
+      symbol_table.add(new_symb);
+      std::cout<<"------------------Adding "<<id2string(new_symb.name)<<" to table-----------------\n";///////////////////////////////////
+    }
   }
   forall_operands(it, code)
   {
@@ -530,7 +537,7 @@ void goto_inlinet::expand_function_call(
     tmp.destructive_append(tmp2);
     parameter_destruction(target->source_location, identifier, f.type, tmp);
 
-    if(f.is_hidden())
+    if(true)//f.is_hidden())
     {
       source_locationt new_source_location=
         function.find_source_location();
@@ -552,6 +559,15 @@ void goto_inlinet::expand_function_call(
               replace_location(it->source_location, new_source_location);
               replace_location(it->guard, new_source_location);
               replace_location(it->code, new_source_location);
+              if(depth>1 && (it->is_assert() ||
+                             it->is_assign() ||
+                             it->is_assume() ||
+                             it->is_decl()))//sarbojit
+              {
+                rename_symbolt rename_symbol;
+                create_renaming_symbol_map(it->code, rename_symbol);
+                rename_symbol(it->code);
+              }//sarbojit
             }         
 
             it->function=target->function;
@@ -559,16 +575,7 @@ void goto_inlinet::expand_function_call(
         }
       }
     }
-        
-    Forall_goto_program_instructions(it, tmp)
-    {
-      if(depth>1)
-      {
-        rename_symbolt rename_symbol;
-        create_renaming_symbol_map(it->code, rename_symbol);
-        rename_symbol(it->code);
-      }
-    }
+
     // set up location instruction for function call  
     target->type=LOCATION;
     target->code.clear();
@@ -837,7 +844,8 @@ void goto_inline(
   const namespacet &ns,
   message_handlert &message_handler)
 {
-  goto_inlinet goto_inline(goto_functions, ns, message_handler);
+  symbol_tablet symbol_table;
+  goto_inlinet goto_inline(goto_functions, ns, message_handler, symbol_table);
   goto_inline();  
 }
 
@@ -879,10 +887,12 @@ void goto_partial_inline(
   message_handlert &message_handler,
   unsigned _smallfunc_limit)
 {
+  symbol_tablet symbol_table;
   goto_inlinet goto_inline(
     goto_functions,
     ns,
-    message_handler);
+    message_handler,
+    symbol_table);
   
   goto_inline.smallfunc_limit=_smallfunc_limit;
   
