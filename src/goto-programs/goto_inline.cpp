@@ -51,7 +51,7 @@ void goto_inlinet::parameter_assignments(
       it2!=parameter_types.end();
       it2++)
   {
-    std::cout<<it1->pretty()<<eom;
+    //std::cout<<it1->pretty()<<eom;
     const code_typet::parametert &parameter=*it2;
 
     // this is the type the n-th argument should be
@@ -395,6 +395,37 @@ void replace_location(
 
 /*******************************************************************\
 
+Function: goto_inlinet::create_renaming_symbol_map
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
+void goto_inlinet::create_renaming_symbol_map(
+  const exprt& code,
+  rename_symbolt &rename_symbol)
+{
+  if(code.id()==ID_symbol)
+  {
+    irep_idt old_id=to_symbol_expr(code).get_identifier();
+    irep_idt new_id=dstring(id2string(old_id)+"::"+std::to_string(depth));
+    rename_symbol.insert_expr(old_id, new_id);
+    symbolt new_symb;
+    new_symb.from_irep(new_id);
+    ns.get_symbol_table()
+  }
+  forall_operands(it, code)
+  {
+    create_renaming_symbol_map(*it, rename_symbol);
+  }
+}
+
+/*******************************************************************\
+
 Function: goto_inlinet::expand_function_call
 
   Inputs:
@@ -521,14 +552,23 @@ void goto_inlinet::expand_function_call(
               replace_location(it->source_location, new_source_location);
               replace_location(it->guard, new_source_location);
               replace_location(it->code, new_source_location);
-            }
+            }         
 
             it->function=target->function;
           }
         }
       }
     }
-
+        
+    Forall_goto_program_instructions(it, tmp)
+    {
+      if(depth>1)
+      {
+        rename_symbolt rename_symbol;
+        create_renaming_symbol_map(it->code, rename_symbol);
+        rename_symbol(it->code);
+      }
+    }
     // set up location instruction for function call  
     target->type=LOCATION;
     target->code.clear();
@@ -691,7 +731,7 @@ bool goto_inlinet::inline_instruction(
     const code_function_callt &call=to_code_function_call(it->code);
 
     if(call.function().id()==ID_symbol)
-    {
+    { 
       expand_function_call(
         dest, it, call.lhs(), to_symbol_expr(call.function()),
         call.arguments(),

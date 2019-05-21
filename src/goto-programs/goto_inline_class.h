@@ -12,6 +12,8 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <util/message.h>
 
 #include "goto_functions.h"
+#include <util/rename_symbol.h>
+
 
 class goto_inlinet:public messaget
 {
@@ -19,11 +21,13 @@ public:
   goto_inlinet(
     goto_functionst &_goto_functions,
     const namespacet &_ns,
-    message_handlert &_message_handler):
+    message_handlert &_message_handler,
+    unsigned _depth=0):
     messaget(_message_handler),
     smallfunc_limit(0),
     goto_functions(_goto_functions),
     ns(_ns),
+    depth(_depth),
     is_recursion_detected(false)
   {
   }
@@ -52,6 +56,7 @@ public:
 protected:
   goto_functionst &goto_functions;
   const namespacet &ns;
+  unsigned depth;
   bool is_recursion_detected;
   
   void expand_function_call(
@@ -80,6 +85,10 @@ protected:
     const irep_idt &function_name,
     const code_typet &code_type,
     goto_programt &dest);
+  
+  void create_renaming_symbol_map(
+    const exprt &code, 
+    rename_symbolt &rename_symbol);
 
   typedef hash_set_cont<irep_idt, irep_id_hash> recursion_sett;
   recursion_sett recursion_set;
