@@ -537,7 +537,7 @@ void goto_inlinet::expand_function_call(
     tmp.destructive_append(tmp2);
     parameter_destruction(target->source_location, identifier, f.type, tmp);
 
-    if(true)//f.is_hidden())
+    if(true)//f.is_hidden())//sarbojit
     {
       source_locationt new_source_location=
         function.find_source_location();
@@ -553,6 +553,9 @@ void goto_inlinet::expand_function_call(
             // don't hide assignment to lhs
             if(it->is_assign() && to_code_assign(it->code).lhs()==lhs)
             {
+              rename_symbolt rename_symbol;//sarbojit
+              create_renaming_symbol_map(it->code.op1(), rename_symbol);//sarbojit
+              rename_symbol(it->code.op1());//sarbojit
             }
             else
             {
