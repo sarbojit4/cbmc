@@ -570,8 +570,9 @@ void goto_inlinet::expand_function_call(
         std::cout<< "before" << std::endl;
         std::cout << "code: " << from_expr(it->code) << std::endl;
         std::cout << "guard: " << from_expr(it->guard) << std::endl;
-        forall_operands(arg_it,it->code.op1())
+        forall_operands(arg_it,it->code.op2())
         {
+          std::cout << "    " << from_expr(*arg_it) << std::endl;
           create_renaming_symbol_map(*arg_it, rename_symbol);          
         }
         create_renaming_symbol_map(it->guard, rename_symbol);
