@@ -551,18 +551,35 @@ void goto_inlinet::expand_function_call(
           std::cout << "guard: " << from_expr(it->guard) << std::endl;
 
       }
-        if(depth>1 && !it->is_function_call())//sarbojit
+      if(depth>1 && !it->is_function_call())//sarbojit
+      {
+        std::cout<< "before" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
+        create_renaming_symbol_map(it->code, rename_symbol);
+        create_renaming_symbol_map(it->guard, rename_symbol);
+        rename_symbol(it->code);
+        rename_symbol(it->guard);
+        std::cout << "after" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
+
+        }//sarbojit
+      if(depth>1 && it->is_function_call())//sarbojit
+      {
+        std::cout<< "before" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
+        forall_operands(arg_it,it->code.op1())
         {
-          std::cout<< "before" << std::endl;
-          std::cout << "code: " << from_expr(it->code) << std::endl;
-          std::cout << "guard: " << from_expr(it->guard) << std::endl;
-          create_renaming_symbol_map(it->code, rename_symbol);
-          create_renaming_symbol_map(it->guard, rename_symbol);
-          rename_symbol(it->code);
-          rename_symbol(it->guard);
-          std::cout << "after" << std::endl;
-          std::cout << "code: " << from_expr(it->code) << std::endl;
-          std::cout << "guard: " << from_expr(it->guard) << std::endl;
+          create_renaming_symbol_map(*arg_it, rename_symbol);          
+        }
+        create_renaming_symbol_map(it->guard, rename_symbol);
+        rename_symbol(it->code);
+        rename_symbol(it->guard);
+        std::cout << "after" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
 
         }//sarbojit
     }
