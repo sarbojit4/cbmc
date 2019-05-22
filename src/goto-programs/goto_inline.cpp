@@ -409,10 +409,12 @@ void goto_inlinet::create_renaming_symbol_map(
   const exprt& code,
   rename_symbolt &rename_symbol)
 {
+  // std::cout<<"Code: "<<from_expr(code)<<std::endl;
   if(code.id()==ID_symbol)
   {
     irep_idt old_id=to_symbol_expr(code).get_identifier();
-    irep_idt new_id=dstring(id2string(old_id)+"::"+std::to_string(depth));
+    irep_idt new_id=dstring(id2string(old_id)+"@"+std::to_string(depth));
+    //std::cout<<"Old_id"
     rename_symbol.insert_expr(old_id, new_id);
     const symbolt* symb;
     if(ns.lookup(new_id, symb))
@@ -422,7 +424,7 @@ void goto_inlinet::create_renaming_symbol_map(
       new_symb.name=new_id;
       new_symb.pretty_name=new_id;
       symbol_table.add(new_symb);
-      std::cout<<"------------------Adding "<<id2string(new_symb.name)<<" to table-----------------\n";///////////////////////////////////
+      //std::cout<<"------------------Adding "<<id2string(new_symb.name)<<" to table-----------------\n";///////////////////////////////////
     }
   }
   forall_operands(it, code)
@@ -532,12 +534,62 @@ void goto_inlinet::expand_function_call(
     
     replace_return(tmp2, lhs, constrain);
 
+    Forall_goto_program_instructions(it, tmp2)
+    {
+      rename_symbolt rename_symbol;
+      if(depth>1 && it->is_assign() && to_code_assign(it->code).lhs()==lhs)
+      {
+        std::cout<< "before" << std::endl;
+          std::cout << "code: " << from_expr(it->code) << std::endl;
+          std::cout << "guard: " << from_expr(it->guard) << std::endl;
+          create_renaming_symbol_map(it->code.op1(), rename_symbol);
+          create_renaming_symbol_map(it->guard, rename_symbol);
+          rename_symbol(it->code.op1());
+          rename_symbol(it->guard);
+          std::cout << "after" << std::endl;
+          std::cout << "code: " << from_expr(it->code) << std::endl;
+          std::cout << "guard: " << from_expr(it->guard) << std::endl;
+
+      }
+        if(depth>1 && !it->is_function_call())//sarbojit
+        {
+          std::cout<< "before" << std::endl;
+          std::cout << "code: " << from_expr(it->code) << std::endl;
+          std::cout << "guard: " << from_expr(it->guard) << std::endl;
+          create_renaming_symbol_map(it->code, rename_symbol);
+          create_renaming_symbol_map(it->guard, rename_symbol);
+          rename_symbol(it->code);
+          rename_symbol(it->guard);
+          std::cout << "after" << std::endl;
+          std::cout << "code: " << from_expr(it->code) << std::endl;
+          std::cout << "guard: " << from_expr(it->guard) << std::endl;
+
+        }//sarbojit
+    }
+
     goto_programt tmp;
     parameter_assignments(target->source_location, identifier, f.type, arguments, tmp);
+    Forall_goto_program_instructions(it, tmp)
+    {
+      if(depth>1)
+      {rename_symbolt rename_symbol;
+      std::cout<< "before" << std::endl;
+      std::cout << "code: " << from_expr(it->code) << std::endl;
+      std::cout << "guard: " << from_expr(it->guard) << std::endl;
+      create_renaming_symbol_map(it->code.op0(), rename_symbol);
+      create_renaming_symbol_map(it->guard, rename_symbol);
+      rename_symbol(it->code.op0());
+      rename_symbol(it->guard);
+      std::cout << "after" << std::endl;
+      std::cout << "code: " << from_expr(it->code) << std::endl;
+      std::cout << "guard: " << from_expr(it->guard) << std::endl;}
+    }
     tmp.destructive_append(tmp2);
     parameter_destruction(target->source_location, identifier, f.type, tmp);
 
-    if(true)//f.is_hidden())//sarbojit
+    
+    
+    if(f.is_hidden())
     {
       source_locationt new_source_location=
         function.find_source_location();
@@ -553,27 +605,12 @@ void goto_inlinet::expand_function_call(
             // don't hide assignment to lhs
             if(it->is_assign() && to_code_assign(it->code).lhs()==lhs)
             {
-              create_renaming_symbol_map(it->code, rename_symbol);
-              create_renaming_symbol_map(it->guard, rename_symbol);
-              rename_symbol(it->code);
-              rename_symbol(it->guard);
             }
             else
             {
               replace_location(it->source_location, new_source_location);
               replace_location(it->guard, new_source_location);
               replace_location(it->code, new_source_location);
-              if(depth>1 && (it->is_assert() ||
-                             it->is_assign() ||
-                             it->is_assume() ||
-                             it->is_decl()))//sarbojit
-              {
-                rename_symbolt rename_symbol;
-                create_renaming_symbol_map(it->code, rename_symbol);
-                create_renaming_symbol_map(it->guard, rename_symbol);
-                rename_symbol(it->code);
-                rename_symbol(it->guard);
-              }//sarbojit
             }         
 
             it->function=target->function;
