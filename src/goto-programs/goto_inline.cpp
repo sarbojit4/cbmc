@@ -553,9 +553,10 @@ void goto_inlinet::expand_function_call(
             // don't hide assignment to lhs
             if(it->is_assign() && to_code_assign(it->code).lhs()==lhs)
             {
-              rename_symbolt rename_symbol;//sarbojit
-              create_renaming_symbol_map(it->code.op1(), rename_symbol);//sarbojit
-              rename_symbol(it->code.op1());//sarbojit
+              create_renaming_symbol_map(it->code, rename_symbol);
+              create_renaming_symbol_map(it->guard, rename_symbol);
+              rename_symbol(it->code);
+              rename_symbol(it->guard);
             }
             else
             {
@@ -569,7 +570,9 @@ void goto_inlinet::expand_function_call(
               {
                 rename_symbolt rename_symbol;
                 create_renaming_symbol_map(it->code, rename_symbol);
+                create_renaming_symbol_map(it->guard, rename_symbol);
                 rename_symbol(it->code);
+                rename_symbol(it->guard);
               }//sarbojit
             }         
 
