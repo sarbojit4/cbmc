@@ -604,7 +604,15 @@ void goto_inlinet::expand_function_call(
     }
     tmp.destructive_append(tmp2);
     parameter_destruction(target->source_location, identifier, f.type, tmp);
-
+    Forall_goto_program_instructions(it,tmp)
+    {
+      if (depth>1 && it->is_dead())
+      {
+        rename_symbolt rename_symbol;
+        create_renaming_symbol_map(it->code,rename_symbol);
+        rename_symbol(it->code);
+      }
+    }
     
     
     if(f.is_hidden())
