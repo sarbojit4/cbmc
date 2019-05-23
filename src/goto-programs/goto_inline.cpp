@@ -534,61 +534,57 @@ void goto_inlinet::expand_function_call(
     
     replace_return(tmp2, lhs, constrain);
 
+    rename_symbolt rename_symbol;
     Forall_goto_program_instructions(it, tmp2)
     {
-      rename_symbolt rename_symbol;
-      if(depth>1 && it->is_assign())
+      if (depth>1)
       {
-        if (it->code.op1().id()==ID_symbol) // don't rename return values on rhs
+        std::cout<< "before" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
+        if(it->is_assign())
         {
-          std::string rhs_name=id2string(it->code.op1().get(ID_identifier));
-          if(rhs_name.find("#return_value")!=rhs_name.npos)
+          if (it->code.op1().id()==ID_symbol) // don't rename return values on rhs
           {
-            create_renaming_symbol_map(it->code.op0(),rename_symbol);
-            rename_symbol(it->code.op0());
+            std::string rhs_name=id2string(it->code.op1().get(ID_identifier));
+            if(rhs_name.find("#return_value")!=rhs_name.npos)
+            {
+              create_renaming_symbol_map(it->code.op0(),rename_symbol);
+              rename_symbol(it->code.op0());
+            }
           }
+          else
+          {
+            create_renaming_symbol_map(it->code, rename_symbol);
+            rename_symbol(it->code);
+          }
+          
+          create_renaming_symbol_map(it->guard, rename_symbol);
+          rename_symbol(it->guard);
         }
-        else
+        else if(it->is_function_call())//sarbojit
+        {
+          forall_operands(arg_it,it->code.op2())
+          {
+            std::cout << "    " << from_expr(*arg_it) << std::endl;
+            create_renaming_symbol_map(*arg_it, rename_symbol);          
+          }
+          create_renaming_symbol_map(it->guard, rename_symbol);
+          rename_symbol(it->code);
+          rename_symbol(it->guard);
+
+        }//sarbojit
+        else //sarbojit
         {
           create_renaming_symbol_map(it->code, rename_symbol);
+          create_renaming_symbol_map(it->guard, rename_symbol);
           rename_symbol(it->code);
-        }
-        
-        create_renaming_symbol_map(it->guard, rename_symbol);
-        rename_symbol(it->guard);
+          rename_symbol(it->guard);
+        }//sarbojit
+        std::cout << "after" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
       }
-      else if(depth>1 && !it->is_function_call())//sarbojit
-      {
-        std::cout<< "before" << std::endl;
-        std::cout << "code: " << from_expr(it->code) << std::endl;
-        std::cout << "guard: " << from_expr(it->guard) << std::endl;
-        create_renaming_symbol_map(it->code, rename_symbol);
-        create_renaming_symbol_map(it->guard, rename_symbol);
-        rename_symbol(it->code);
-        rename_symbol(it->guard);
-        std::cout << "after" << std::endl;
-        std::cout << "code: " << from_expr(it->code) << std::endl;
-        std::cout << "guard: " << from_expr(it->guard) << std::endl;
-
-        }//sarbojit
-      else if(depth>1 && it->is_function_call())//sarbojit
-      {
-        std::cout<< "before" << std::endl;
-        std::cout << "code: " << from_expr(it->code) << std::endl;
-        std::cout << "guard: " << from_expr(it->guard) << std::endl;
-        forall_operands(arg_it,it->code.op2())
-        {
-          std::cout << "    " << from_expr(*arg_it) << std::endl;
-          create_renaming_symbol_map(*arg_it, rename_symbol);          
-        }
-        create_renaming_symbol_map(it->guard, rename_symbol);
-        rename_symbol(it->code);
-        rename_symbol(it->guard);
-        std::cout << "after" << std::endl;
-        std::cout << "code: " << from_expr(it->code) << std::endl;
-        std::cout << "guard: " << from_expr(it->guard) << std::endl;
-
-        }//sarbojit
     }
 
     goto_programt tmp;
@@ -596,17 +592,18 @@ void goto_inlinet::expand_function_call(
     Forall_goto_program_instructions(it, tmp)
     {
       if(depth>1)
-      {rename_symbolt rename_symbol;
-      std::cout<< "before" << std::endl;
-      std::cout << "code: " << from_expr(it->code) << std::endl;
-      std::cout << "guard: " << from_expr(it->guard) << std::endl;
-      create_renaming_symbol_map(it->code.op0(), rename_symbol);
-      create_renaming_symbol_map(it->guard, rename_symbol);
-      rename_symbol(it->code.op0());
-      rename_symbol(it->guard);
-      std::cout << "after" << std::endl;
-      std::cout << "code: " << from_expr(it->code) << std::endl;
-      std::cout << "guard: " << from_expr(it->guard) << std::endl;}
+      {
+        std::cout<< "before" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
+        create_renaming_symbol_map(it->code.op0(), rename_symbol);
+        create_renaming_symbol_map(it->guard, rename_symbol);
+        rename_symbol(it->code.op0());
+        rename_symbol(it->guard);
+        std::cout << "after" << std::endl;
+        std::cout << "code: " << from_expr(it->code) << std::endl;
+        std::cout << "guard: " << from_expr(it->guard) << std::endl;
+      }
     }
     tmp.destructive_append(tmp2);
     parameter_destruction(target->source_location, identifier, f.type, tmp);
@@ -614,7 +611,6 @@ void goto_inlinet::expand_function_call(
     {
       if (depth>1 && it->is_dead())
       {
-        rename_symbolt rename_symbol;
         create_renaming_symbol_map(it->code,rename_symbol);
         rename_symbol(it->code);
       }
