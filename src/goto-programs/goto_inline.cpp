@@ -537,21 +537,27 @@ void goto_inlinet::expand_function_call(
     Forall_goto_program_instructions(it, tmp2)
     {
       rename_symbolt rename_symbol;
-      if(depth>1 && it->is_assign() && to_code_assign(it->code).lhs()==lhs)
+      if(depth>1 && it->is_assign())
       {
-        std::cout<< "before" << std::endl;
-          std::cout << "code: " << from_expr(it->code) << std::endl;
-          std::cout << "guard: " << from_expr(it->guard) << std::endl;
-          create_renaming_symbol_map(it->code.op1(), rename_symbol);
-          create_renaming_symbol_map(it->guard, rename_symbol);
-          rename_symbol(it->code.op1());
-          rename_symbol(it->guard);
-          std::cout << "after" << std::endl;
-          std::cout << "code: " << from_expr(it->code) << std::endl;
-          std::cout << "guard: " << from_expr(it->guard) << std::endl;
-
+        if (it->code.op1().id()==ID_symbol) // don't rename return values on rhs
+        {
+          std::string rhs_name=id2string(it->code.op1().get(ID_identifier));
+          if(rhs_name.find("#return_value")!=rhs_name.npos)
+          {
+            create_renaming_symbol_map(it->code.op0(),rename_symbol);
+            rename_symbol(it->code.op0());
+          }
+        }
+        else
+        {
+          create_renaming_symbol_map(it->code, rename_symbol);
+          rename_symbol(it->code);
+        }
+        
+        create_renaming_symbol_map(it->guard, rename_symbol);
+        rename_symbol(it->guard);
       }
-      if(depth>1 && !it->is_function_call())//sarbojit
+      else if(depth>1 && !it->is_function_call())//sarbojit
       {
         std::cout<< "before" << std::endl;
         std::cout << "code: " << from_expr(it->code) << std::endl;
@@ -565,7 +571,7 @@ void goto_inlinet::expand_function_call(
         std::cout << "guard: " << from_expr(it->guard) << std::endl;
 
         }//sarbojit
-      if(depth>1 && it->is_function_call())//sarbojit
+      else if(depth>1 && it->is_function_call())//sarbojit
       {
         std::cout<< "before" << std::endl;
         std::cout << "code: " << from_expr(it->code) << std::endl;
