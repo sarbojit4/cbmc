@@ -39,6 +39,7 @@ void goto_inlinet::parameter_assignments(
   const exprt::operandst &arguments,
   goto_programt &dest)
 {
+  rename_symbolt rename_symbol;
   // iterates over the operands
   exprt::operandst::const_iterator it1=arguments.begin();
 
@@ -75,6 +76,11 @@ void goto_inlinet::parameter_assignments(
       decl->code.add_source_location()=source_location;
       decl->source_location=source_location;
       decl->function=function_name; 
+      if (depth>1)
+      {
+        create_renaming_symbol_map(decl->code,rename_symbol);
+        rename_symbol(decl->code);
+      }
     }
 
     // this is the actual parameter
@@ -145,7 +151,13 @@ void goto_inlinet::parameter_assignments(
       }
 
       // adds an assignment of the actual parameter to the formal parameter
-      code_assignt assignment(symbol_exprt(identifier, par_type), actual);
+      symbol_exprt lhs=symbol_exprt(identifier, par_type);
+      if (depth>1)
+      {
+        create_renaming_symbol_map(lhs,rename_symbol);
+        rename_symbol(lhs);
+      }
+      code_assignt assignment(lhs, actual);
       assignment.add_source_location()=source_location;
 
       dest.add_instruction(ASSIGN);
@@ -182,6 +194,7 @@ void goto_inlinet::parameter_destruction(
   const code_typet &code_type,
   goto_programt &dest)
 {
+  rename_symbolt rename_symbol;
   const code_typet::parameterst &parameter_types=
     code_type.parameters();
   
@@ -211,6 +224,11 @@ void goto_inlinet::parameter_destruction(
       dead->code.add_source_location()=source_location;
       dead->source_location=source_location;
       dead->function=function_name; 
+      if (depth>1)
+      {
+        create_renaming_symbol_map(dead->code,rename_symbol);
+        rename_symbol(dead->code);
+      }
     }
   }
 }
@@ -551,16 +569,35 @@ void goto_inlinet::expand_function_call(
             {
               create_renaming_symbol_map(it->code.op0(),rename_symbol);
               rename_symbol(it->code.op0());
+              continue;
             }
           }
-          else
+          if (it->code.op0().id()==ID_symbol) // don't rename return values on lhs
           {
-            create_renaming_symbol_map(it->code, rename_symbol);
-            rename_symbol(it->code);
+            std::string lhs_name=id2string(it->code.op0().get(ID_identifier));
+            if(lhs_name.find("#return_value")!=lhs_name.npos)
+            {
+              create_renaming_symbol_map(it->code.op1(),rename_symbol);
+              rename_symbol(it->code.op1());
+              continue;
+            }
           }
+          create_renaming_symbol_map(it->code, rename_symbol);
+          rename_symbol(it->code);
           
           create_renaming_symbol_map(it->guard, rename_symbol);
           rename_symbol(it->guard);
+        }
+        else if (it->is_dead())
+        {
+          if (it->code.op0().id()==ID_symbol)
+          {
+            std::string var=id2string(it->code.op0().get(ID_identifier));
+            if (var.find("#return_value")!=var.npos)
+              continue;
+          } 
+          create_renaming_symbol_map(it->code,rename_symbol);
+          rename_symbol(it->code);
         }
         else if(it->is_function_call())//sarbojit
         {
@@ -589,32 +626,8 @@ void goto_inlinet::expand_function_call(
 
     goto_programt tmp;
     parameter_assignments(target->source_location, identifier, f.type, arguments, tmp);
-    Forall_goto_program_instructions(it, tmp)
-    {
-      if(depth>1)
-      {
-        std::cout<< "before" << std::endl;
-        std::cout << "code: " << from_expr(it->code) << std::endl;
-        std::cout << "guard: " << from_expr(it->guard) << std::endl;
-        create_renaming_symbol_map(it->code.op0(), rename_symbol);
-        create_renaming_symbol_map(it->guard, rename_symbol);
-        rename_symbol(it->code.op0());
-        rename_symbol(it->guard);
-        std::cout << "after" << std::endl;
-        std::cout << "code: " << from_expr(it->code) << std::endl;
-        std::cout << "guard: " << from_expr(it->guard) << std::endl;
-      }
-    }
     tmp.destructive_append(tmp2);
     parameter_destruction(target->source_location, identifier, f.type, tmp);
-    Forall_goto_program_instructions(it,tmp)
-    {
-      if (depth>1 && it->is_dead())
-      {
-        create_renaming_symbol_map(it->code,rename_symbol);
-        rename_symbol(it->code);
-      }
-    }
     
     
     if(f.is_hidden())
